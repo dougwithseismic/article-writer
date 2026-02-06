@@ -1,195 +1,151 @@
 # article-writer
 
-A Claude Code plugin for writing publication-ready articles with deep research, real-world examples, and quality-gated completion.
+An autonomous article-writing agent for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Give it a topic and a format, and it researches, writes, and self-edits until the article passes every quality gate — no hand-holding required.
 
-Supports 8 content types — from 500-word emails to 10k+ word deep dives — with customizable word lengths. The agent adapts its research depth, narrative arc, and quality gates to match the format you need.
+Handles everything from 500-word email newsletters to 10,000+ word deep dives across 8 content types, each with its own research depth, narrative arc, and quality standards.
 
-## Quick Start
+## Install
+
+Requires [Claude Code](https://docs.anthropic.com/en/docs/claude-code) v1.0.33 or later.
+
+```shell
+# Add the marketplace
+/plugin marketplace add dougwithseismic/article-writer
+
+# Install the plugin
+/plugin install article-writer@article-writer
+```
+
+For local development:
 
 ```bash
-# Install
-claude plugin install <repo-url>
-
-# Write a long-form article (default)
-/article-writer:prd The state of AI agents in 2026
-
-# Write a news article
-/article-writer:prd news: OpenAI releases GPT-5
-
-# Write a tutorial at custom length
-/article-writer:prd tutorial 3000 words: Building a RAG pipeline with LangChain
-
-# Write an email newsletter
-/article-writer:prd email: Weekly AI tools roundup
-
-# Run the full autonomous pipeline
-/article-writer:writer
+claude --plugin-dir ./article-writer
 ```
+
+## Usage
+
+Just tell Claude what you want to write. It will pick the right content type, research depth, and quality targets automatically.
+
+```
+Write me a long-form article about the state of AI agents in 2025
+
+Write a short news piece covering the latest React Server Components release
+
+I need a tutorial on building a RAG pipeline with LangChain, around 3000 words
+
+Write an email newsletter summarizing this week's AI tool launches
+```
+
+The agent figures out the content type from your description and runs the full pipeline — research, outline, write, embed media, review, evaluate — looping until all quality gates pass.
+
+### Slash commands
+
+Under the hood, the plugin exposes skills you can call directly if you want more control:
+
+| Command | What It Does |
+|---------|-------------|
+| `/article-writer:prd [topic]` | Creates the article spec |
+| `/article-writer:research [section-id]` | Deep research for one section |
+| `/article-writer:outline` | Builds a detailed outline from research |
+| `/article-writer:write-section [section-id]` | Writes one section |
+| `/article-writer:embed-media` | Finds YouTube videos and generates diagrams |
+| `/article-writer:review` | Fact-checks and polishes |
+| `/article-writer:eval` | Runs quality gates (PASS/WARN/FAIL) |
+| `/article-writer:writer` | The autonomous loop — runs the full pipeline |
+
+The `prd` command accepts an optional content type and word count prefix:
+
+```
+/article-writer:prd news: Topic here
+/article-writer:prd tutorial 3000 words: Topic here
+```
+
+But most of the time, just describe what you need in plain English and let the agent handle the rest.
 
 ## Content Types
 
-Each content type has default targets, but you can always override the word count. Content type controls **format** (length, structure, quality gates). Article type controls **evidence** (technical, business, cultural, etc.) and is auto-detected from the topic.
-
-| Type | Default Words | Sections | Links | Examples | Prose Ratio | Best For |
-|------|:------------:|:--------:|:-----:|:--------:|:-----------:|----------|
-| `long-form` | 10,000 | 8-12 | 30+ | 10+ | 70% | Deep dives, comprehensive guides |
+| Type | Words | Sections | Links | Examples | Prose | Best For |
+|------|------:|:--------:|------:|---------:|------:|----------|
+| `long-form` | 10,000 | 8-12 | 30+ | 10+ | 70% | Comprehensive guides, deep dives |
 | `research` | 8,000 | 6-10 | 40+ | 8+ | 75% | Data-driven analysis, whitepapers |
-| `tutorial` | 5,000 | 5-8 | 15+ | 5+ | 55% | Step-by-step how-tos, walkthroughs |
-| `case-study` | 4,000 | 4-6 | 10+ | 3+ | 75% | Company/project deep dives |
-| `opinion` | 3,000 | 4-6 | 10+ | 5+ | 80% | Argument-driven essays, hot takes |
+| `tutorial` | 5,000 | 5-8 | 15+ | 5+ | 55% | Step-by-step walkthroughs |
+| `case-study` | 4,000 | 4-6 | 10+ | 3+ | 75% | Company or project deep dives |
+| `opinion` | 3,000 | 4-6 | 10+ | 5+ | 80% | Argument-driven essays |
 | `listicle` | 3,000 | 5-15 | 15+ | 8+ | 40% | Curated lists with context |
 | `news` | 1,500 | 3-5 | 8+ | 3+ | 80% | Timely coverage, announcements |
 | `email` | 1,000 | 2-4 | 3+ | 2+ | 85% | Newsletters, email campaigns |
 
-### Custom Word Lengths
+Setting a custom word count scales all other targets proportionally.
 
-Word count is independent from content type. Override any preset:
-
-```bash
-/article-writer:prd 4000 words: State of JavaScript testing   # long-form at 4k words
-/article-writer:prd news 3000 words: React Server Components   # news format, longer than default
-/article-writer:prd email 2000 words: Monthly product update    # email format, longer than default
-```
-
-When you set a custom word count, all other targets (links, examples, sections, research depth) scale proportionally from the preset's base ratios.
-
-### How Content Type and Article Type Work Together
-
-These two axes are orthogonal:
-
-- **Content type** = format (how long, how structured, what quality gates)
-- **Article type** = evidence (what kind of research and examples to gather)
-
-So "technical tutorial" and "technical long-form" use the same evidence strategy (code samples, docs, benchmarks) but completely different formats. A "business news" article gathers business evidence (revenue, case studies) but in a short, timely news format.
-
-## Skills
-
-### `/article-writer:prd [content-type] [word-count]: [topic]`
-
-Generates a detailed article specification. Reads presets from `templates/presets.json`, detects article type, creates section scaffolds with narrative beats, word targets, example requirements, and research questions.
-
-```bash
-/article-writer:prd news: Breaking coverage of new React framework
-/article-writer:prd tutorial 8000 words: Complete guide to Kubernetes networking
-/article-writer:prd The future of remote work                  # defaults to long-form
-```
-
-**Output**: `articles/[slug]/article.json`
-
-### `/article-writer:research [section-id]`
-
-Deep research for a single section. Research depth scales with content type — 2 queries for email, 5+ for long-form. Gathers sources, real-world examples, expert quotes, and topic-specific evidence.
-
-**Output**: `articles/[slug]/research/[section-id].md`
-
-### `/article-writer:outline`
-
-Creates a detailed outline from completed research. Skipped automatically for short formats (fewer than 5 sections).
-
-**Output**: `articles/[slug]/outline.md`
-
-### `/article-writer:write-section [section-id]`
-
-Writes a single section to its word target (from `article.json`). Adapts writing style to content type — inverted pyramid for news, step-by-step for tutorials, CTA-focused for emails.
-
-**Output**: Appended to `articles/[slug]/output/article.md`
-
-### `/article-writer:embed-media`
-
-Finds and embeds YouTube videos and generates mermaid diagrams. Skipped for email and news formats.
-
-### `/article-writer:review`
-
-Fact-checks sources, fixes editorial issues, polishes transitions, and marks the article complete.
-
-### `/article-writer:eval`
-
-Runs all quality gates against the targets in `article.json` (not hardcoded values). Returns PASS/FAIL/WARN with specific issues.
-
-### `/article-writer:writer`
-
-The main autonomous loop. Orchestrates the full pipeline and loops until all quality gates pass. Adapts the pipeline to the content type — shorter formats skip outline and media embedding.
+**Content type** controls format — length, structure, quality gates, narrative arc. **Article type** controls evidence — code samples for technical topics, revenue data for business, etc. Article type is auto-detected from the topic. These two axes are independent: a "technical tutorial" and a "technical long-form" gather the same evidence but produce completely different formats.
 
 ## Pipeline
 
-The pipeline adapts based on content type:
+The agent adapts its pipeline to the content type.
 
-**Full pipeline** (long-form, research, case-study, tutorial):
+**Long-form, research, case-study, tutorial:**
 ```
 RESEARCH -> OUTLINE -> WRITE -> EMBED MEDIA -> REVIEW -> EVAL
                          ^                                  |
                          +------ REVISE IF EVAL FAILS ------+
 ```
 
-**Short pipeline** (email, news, opinion, listicle):
+**Email, news, opinion, listicle:**
 ```
 RESEARCH -> WRITE -> REVIEW -> EVAL
               ^                  |
               +-- REVISE IF FAIL +
 ```
 
+Short formats skip the outline (fewer than 5 sections) and media embedding.
+
 ## Quality Gates
 
-All thresholds are read from `article.json` — set during PRD based on content type and custom word count. Nothing is hardcoded in the eval or stop hooks.
+Every article is evaluated against targets set during the PRD phase. All thresholds live in `article.json` and scale with your content type and word count — nothing is hardcoded.
 
 | Gate | What It Checks |
 |------|---------------|
 | Word count | Total words >= `targets.minimum_words` |
-| Section completeness | Each section >= `quality_gates.min_words_per_section` |
+| Section completeness | Each section meets its word minimum |
 | External links | Unique URLs >= `targets.external_links` |
-| Real-world examples | Named examples >= `targets.real_world_examples` |
-| Prose ratio | Flowing text >= `editorial_standards.prose_ratio_minimum` |
+| Real-world examples | Named people, companies, studies >= `targets.real_world_examples` |
+| Prose ratio | Flowing prose vs bullet lists >= `editorial_standards.prose_ratio_minimum` |
 | Header style | No double-barreled colon headers |
 | Narrative quality | Hook, flow, and closing all present |
 
+If any gate fails, the writer loop identifies the gaps and revises automatically.
+
 ## Article Structure
 
-Each article lives in its own directory:
+Each article gets its own directory:
 
 ```
 articles/[slug]/
-├── article.json     # Spec, targets, sections, quality gates
-├── progress.txt     # Iteration log
-├── outline.md       # Detailed outline (long-form only)
-├── research/
-│   ├── sources.json
-│   └── [section-id].md
-└── output/
-    └── article.md   # Final article
+  article.json       # Spec, targets, sections, quality gates
+  progress.txt       # Iteration log
+  outline.md         # Detailed outline (long formats only)
+  research/
+    sources.json     # All sources with metadata
+    [section-id].md  # Research notes per section
+  output/
+    article.md       # Final article
 ```
 
 ## Customization
 
-### Presets
+**Presets** — Edit `templates/presets.json` to change defaults for any content type or add new ones. Each preset defines word targets, section ranges, research depth, editorial rules, and the narrative arc template.
 
-Edit `templates/presets.json` to change default targets for any content type, or add new content types entirely. Each preset defines:
+**Per-article overrides** — The PRD populates `article.json` from presets (scaled by custom word count). You can edit `article.json` directly to fine-tune any target for a specific article.
 
-- Word targets and minimums
-- Section count range
-- Link and example requirements
-- Prose ratio and editorial rules
-- Research depth (sources per section, search queries, video research)
-- Narrative arc template
+## Examples
 
-### Per-Article Overrides
-
-The `article.json` spec controls everything for a specific article. The PRD populates it from presets (scaled by custom word count), but you can edit it directly to fine-tune any target.
-
-## Editorial Philosophy
-
-**Narrative over lists.** Prose ratio targets vary by type (40% for listicles, 85% for emails), but the principle holds: lists need surrounding prose that explains the "why".
-
-**Critical thinking over information dumps.** Every section analyzes trade-offs and nuances, not just presents facts.
-
-**Conversational headers.** No academic double-barreled titles with colons. "Where Good Prospects Hide" not "Finding Prospects: Strategies and Techniques".
-
-**Real examples only.** Named people, companies, studies — with links. No hypotheticals.
+The `examples/` directory contains complete article specs for all 8 content types, with research, outlines, and finished articles you can reference.
 
 ## Hooks
 
-- **Stop hook**: Evaluates article quality before the agent completes (reads all thresholds from article.json)
-- **PreToolUse (WebSearch)**: Logs search queries during research
-- **PostToolUse (Write)**: Reports word count when article.md is updated
+- **Stop** — Evaluates article quality before the agent completes. Reads all thresholds from `article.json`.
+- **PreToolUse (WebSearch)** — Logs search queries during research.
+- **PostToolUse (Write)** — Reports word count when `article.md` is updated.
 
 ## License
 

@@ -1,10 +1,11 @@
 {
   "name": "article-writer",
-  "description": "Autonomous agent for writing articles with deep research, real-world examples, and quality-gated completion. Supports multiple content types (long-form, news, email, tutorial, etc.) and custom word lengths.",
-  "version": "2.0.0",
+  "description": "Autonomous agent for writing articles with deep research, real-world examples, and quality-gated completion. Supports 8 content types and custom word lengths.",
+  "version": "1.0.0",
   "author": {
-    "name": "wralph"
+    "name": "Doug Silkstone"
   },
-  "repository": "",
+  "homepage": "https://github.com/dougwithseismic/article-writer",
+  "repository": "https://github.com/dougwithseismic/article-writer",
   "license": "MIT"
 }
