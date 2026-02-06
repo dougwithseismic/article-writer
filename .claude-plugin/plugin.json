@@ -1,7 +1,7 @@
 {
   "name": "article-writer",
-  "description": "Autonomous agent for writing comprehensive 10k+ word articles with deep research, real-world examples, and quality-gated completion",
-  "version": "1.0.0",
+  "description": "Autonomous agent for writing articles with deep research, real-world examples, and quality-gated completion. Supports multiple content types (long-form, news, email, tutorial, etc.) and custom word lengths.",
+  "version": "2.0.0",
   "author": {
     "name": "wralph"
   },

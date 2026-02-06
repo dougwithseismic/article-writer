@@ -1,10 +1,10 @@
 ---
 name: write-section
-description: Write a comprehensive article section (800-1500 words) with strong narrative prose, real examples, and inline citations. Prioritizes flowing text over bullet lists.
+description: Write a comprehensive article section with strong narrative prose, real examples, and inline citations. Reads word targets and prose ratio from article.json. Prioritizes flowing text over bullet lists.
 allowed-tools: Read, Write, Edit, Glob, WebFetch
 ---
 
-# Section Writer (800-1500 words)
+# Section Writer
 
 Write the section: **$ARGUMENTS**
 
@@ -16,20 +16,13 @@ Write the section: **$ARGUMENTS**
 
 **Headers that flow.** Avoid double-barreled titles with colons like "Finding Prospects: Where to Look and Who to Target". Instead, use direct, punchy headers: "Where the Good Prospects Hide" or "Building Your First 100 Contacts".
 
-## Writing Standards
-
-- **800-1500 words** per section
-- **Prose-first** — build narrative, use lists sparingly
-- **3+ real examples** with links woven into text
-- **Evidence** introduced with context, followed by analysis
-- **Inline citations** for claims
-- **Headers that read naturally** — no colon-heavy academic style
-
 ## Setup
 
 1. **Load Section Context**
-   - Read `article.json` for section scaffold and `article_type`
-   - Note the `narrative_role` (hook, context, foundation, deep-dive, practical, inspiration, action)
+   - Read `article.json` for section scaffold, `article_type`, and `content_type`
+   - Read the section's `word_target` and `word_minimum` — these are the targets for THIS section
+   - Read `editorial_standards.prose_ratio_minimum` — this is the prose ratio target
+   - Note the `narrative_role` (hook, context, foundation, deep-dive, practical, inspiration, action, etc.)
    - Review research questions to answer
 
 2. **Load Research**
@@ -41,11 +34,46 @@ Write the section: **$ARGUMENTS**
    - Read `output/article.md` for voice continuity
    - Plan a natural bridge from the previous section
 
+## Writing Standards
+
+All targets come from `article.json` — do NOT use hardcoded values:
+
+- **Word target**: from section's `word_target` field
+- **Word minimum**: from section's `word_minimum` field (fallback to `quality_gates.min_words_per_section`)
+- **Prose ratio**: from `editorial_standards.prose_ratio_minimum`
+- **Examples per section**: from section's `required_elements.examples_minimum`
+- **Links per section**: from section's `required_elements.external_links_minimum` (fallback to `quality_gates.min_links_per_section`)
+- **Prose-first** — build narrative, use lists sparingly
+- **Evidence** introduced with context, followed by analysis
+- **Inline citations** for claims
+- **Headers that read naturally** — no colon-heavy academic style
+
+## Content Type Adaptations
+
+Adjust your writing approach based on the `content_type` in article.json:
+
+**Email/Newsletter**: Get to the point fast. Short paragraphs. One clear CTA. Conversational and direct. No lengthy preambles.
+
+**News**: Inverted pyramid — most important info first. Tight prose. Quote sources. Stay factual and timely.
+
+**Listicle**: Each item gets a punchy header and supporting prose. Lists are expected but each item still needs narrative context.
+
+**Tutorial**: Step-by-step clarity. Code samples with context. "Here's what we're building" before diving in. Check comprehension between steps.
+
+**Opinion**: Strong thesis statements. Acknowledge counterarguments. Build an argument, not just a list of claims.
+
+**Long-form/Research/Case-study**: Full narrative treatment as described in the writing process below.
+
 ## Writing Process
 
-### Step 1: The Opening (100-150 words)
+### Step 1: The Opening
 
 Start mid-action or with a concrete scenario. Never start with "In this section, we'll cover..."
+
+Scale the opening length to the section size:
+- Short sections (under 500 words): 1-2 sentences
+- Medium sections (500-800 words): 1 short paragraph
+- Full sections (800+ words): 1-2 paragraphs (100-150 words)
 
 **Strong openings:**
 - Scenario: "Marco sent 300 emails. Three months later, he'd closed $15,000 in consulting work."
@@ -55,13 +83,13 @@ Start mid-action or with a concrete scenario. Never start with "In this section,
 
 The first paragraph should make the reader lean in.
 
-### Step 2: Building the Body (600-1000 words)
+### Step 2: Building the Body
 
 **Write in prose paragraphs, not bullet cascades.**
 
 When you have 5 related points, don't write 5 bullets. Write 2-3 paragraphs that weave those points into a coherent argument. Use a list only when you're presenting truly parallel items (like a tool comparison or a step-by-step checklist).
 
-**The prose-to-list ratio:** Aim for 70% flowing prose, 30% structured elements (lists, tables, code). If a section is more than 40% bullets, rewrite the bullets as paragraphs.
+**The prose-to-list ratio:** Check `editorial_standards.prose_ratio_minimum` from article.json. If the target is 70%, aim for 70% flowing prose and 30% structured elements. If the target is 40% (listicle), lists are more acceptable but still need surrounding context.
 
 **Pattern for deep explanations:**
 
@@ -136,9 +164,14 @@ Follow with analysis explaining what it means and why it matters.
 
 Headers should sound like something a smart friend would say, not like academic paper sections.
 
-### Step 5: The Closing (100-150 words)
+### Step 5: The Closing
 
 End with momentum. Bridge to what's next without the phrase "In the next section..."
+
+Scale closing length to section size:
+- Short sections: 1 sentence transition
+- Medium sections: 1-2 sentences
+- Full sections: 1 short paragraph (100-150 words)
 
 **Strong closings:**
 - Insight landing: "So the secret isn't magic—it's doing the boring work that everyone skips."
@@ -147,9 +180,9 @@ End with momentum. Bridge to what's next without the phrase "In the next section
 
 ### Step 6: Polish
 
-Before finishing:
-- [ ] Word count: 800+ minimum
-- [ ] Prose ratio: At least 70% flowing text
+Before finishing, check against article.json targets:
+- [ ] Word count meets section's `word_minimum`
+- [ ] Prose ratio meets `editorial_standards.prose_ratio_minimum`
 - [ ] All claims have citations
 - [ ] Headers read naturally (no colon-heavy titles)
 - [ ] Transitions feel organic
@@ -207,8 +240,8 @@ Log completion with quality metrics.
 ## Quality Gates
 
 Section FAILS if:
-- Under 800 words
-- More than 40% bullet points
+- Under the section's `word_minimum` (from article.json)
+- Prose ratio below `editorial_standards.prose_ratio_minimum`
 - Double-barreled colon headers
 - Lists without surrounding prose
 - Missing citations
@@ -226,8 +259,8 @@ Section FAILS if:
 ## Completion
 
 Report:
-- Word count
-- Prose-to-list ratio
+- Word count (vs target from article.json)
+- Prose-to-list ratio (vs target from article.json)
 - Links included
 - Quality assessment
 - Next step: `/write-section [next]` or `/embed-media`

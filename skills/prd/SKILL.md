@@ -1,20 +1,58 @@
 ---
 name: prd
-description: Generate a comprehensive article specification. Creates detailed scaffolding with narrative beats, word targets, and example requirements for a 10k+ word article.
+description: Generate a comprehensive article specification. Creates detailed scaffolding with narrative beats, word targets, and example requirements. Supports multiple content types and custom word lengths.
 allowed-tools: Read, Write, Glob, WebSearch
 ---
 
-# Article PRD Generator (10k+ Word Target)
+# Article PRD Generator
 
 Generate a comprehensive article specification for: **$ARGUMENTS**
 
+## Argument Parsing
+
+Parse the arguments to extract content type, custom word count, and topic:
+
+**Supported formats:**
+- `/prd Topic Here` — defaults to long-form, preset word count
+- `/prd news: Topic Here` — uses news preset
+- `/prd tutorial: Topic Here` — uses tutorial preset
+- `/prd 4000 words: Topic Here` — long-form at custom 4000 words
+- `/prd news 2000 words: Topic Here` — news format at custom 2000 words
+- `/prd 1500 words email: Topic Here` — email format at custom 1500 words
+
+**Parsing rules:**
+1. Look for a known content type keyword: `long-form`, `research`, `news`, `opinion`, `listicle`, `email`, `tutorial`, `case-study`
+2. Look for a word count pattern: `N words` or `Nk words` (e.g., `4000 words`, `4k words`)
+3. Everything after the colon (`:`) is the topic. If no colon, everything is the topic.
+4. If no content type specified, default to `long-form`
+5. If no word count specified, use the preset's default
+
+## Load Presets
+
+Read `templates/presets.json` to get the preset for the detected content type.
+
+**If a custom word count was specified**, scale the preset targets proportionally:
+- `total_words` = custom word count
+- `minimum_words` = custom word count * 0.8
+- `sections` = scale proportionally from preset (minimum 2)
+- `external_links` = scale proportionally (minimum 3)
+- `real_world_examples` = scale proportionally (minimum 2)
+- `min_words_per_section` = total_words / section_count
+- `sources_per_section` = scale proportionally (minimum 3)
+
+**Scaling formula**: `scaled_value = round(preset_value * (custom_words / preset_total_words))`
+
+Example: If the `news` preset has `external_links: 8` at `total_words: 1500`, and you specify `3000 words`, then `external_links = round(8 * 3000/1500) = 16`.
+
 ## Target Output
 
-- **10,000+ words** total article
-- **8-12 sections** with 800-1500 words each
-- **Rich with examples** — real people, companies, case studies, data
-- **Narrative flow** — story arc, not information dump
-- **Prose-first** — 70% flowing text, 30% structured elements
+Targets come from the preset (possibly scaled by custom word count):
+
+- **Word target** from preset `targets.total_words`
+- **Section count** from preset `targets.sections_min` to `targets.sections_max`
+- **Examples and links** from preset targets
+- **Narrative flow** — story arc from preset `narrative_arc`
+- **Prose ratio** from preset `editorial.prose_ratio_minimum`
 
 ## Article Type Detection
 
@@ -30,6 +68,8 @@ Before scaffolding, determine the article type. This shapes what "evidence" look
 | Cultural/Trend | Quotes, surveys, cultural artifacts, timelines |
 
 Set `article_type` in article.json. This tells downstream skills what kinds of evidence to prioritize.
+
+Note: `article_type` (topic/evidence) is independent from `content_type` (format/length). A "technical tutorial" uses technical evidence in tutorial format. A "business news" article uses business evidence in news format.
 
 ## Editorial Philosophy
 
@@ -51,20 +91,15 @@ Quick WebSearch to understand:
 
 ### Step 2: Define the Narrative Arc
 
-Every great article tells a story:
+Use the narrative arc from the content type preset. Different formats have different arcs:
 
-```
-HOOK → CONTEXT → FOUNDATION → DEEP DIVES → PRACTICAL APPLICATION → INSPIRATION → ACTION
-```
+**Long-form**: `HOOK -> CONTEXT -> FOUNDATION -> DEEP DIVES -> PRACTICAL -> INSPIRATION -> ACTION`
+**News**: `HOOK -> CONTEXT -> DETAILS -> IMPACT -> NEXT-STEPS`
+**Email**: `HOOK -> VALUE -> CTA`
+**Tutorial**: `HOOK -> PREREQUISITES -> FOUNDATION -> WALKTHROUGH -> ADVANCED -> WRAP-UP`
+**Case Study**: `HOOK -> BACKGROUND -> CHALLENGE -> APPROACH -> RESULTS -> LESSONS`
 
-Map sections to this arc:
-1. **Hook** (intro) — Why should reader care RIGHT NOW?
-2. **Context** — What's the landscape? What changed?
-3. **Foundation** — Core concepts needed
-4. **Deep Dives** (2-4 sections) — Specific techniques with examples
-5. **Practical** — How to actually do this
-6. **Inspiration** — Real-world examples, case studies
-7. **Action** — What reader should do next
+Map sections to the arc from `templates/presets.json` for the chosen content type.
 
 ### Step 3: Create Section Scaffolding
 
@@ -77,9 +112,9 @@ For EACH section, define:
   "priority": 1,
   "status": "pending",
   "research_complete": false,
-  "word_target": 1200,
-  "word_minimum": 800,
-  "narrative_role": "hook|context|foundation|deep-dive|practical|inspiration|action",
+  "word_target": 0,
+  "word_minimum": 0,
+  "narrative_role": "from preset narrative_arc",
   "required_elements": {
     "examples_minimum": 2,
     "external_links_minimum": 3,
@@ -104,6 +139,10 @@ For EACH section, define:
 }
 ```
 
+**Word targets per section**: Distribute `total_words` across sections. Each section's `word_target` should be approximately `total_words / section_count`, but weight deep-dive sections heavier and intro/conclusion lighter.
+
+**Section `word_minimum`**: Use the preset's `quality_gates.min_words_per_section`.
+
 **Title Guidelines:**
 - NO colons separating concept from description
 - 3-7 words, conversational tone
@@ -122,6 +161,8 @@ For each deep-dive section, specify:
 - **Evidence** appropriate to the article type (code for technical, data for analytical, case studies for business)
 - **Comparisons** (before/after, old vs new approach)
 
+Scale the example requirements based on the content type. An email needs 2 examples total. A long-form article needs 10+.
+
 ### Step 5: Create Article Directory
 
 ```bash
@@ -135,21 +176,23 @@ mkdir -p articles/[slug]/{research,output,drafts}
   "topic": "Original topic",
   "slug": "url-slug",
   "article_type": "technical|business|marketing|opinion|tutorial|cultural",
+  "content_type": "long-form|research|news|opinion|listicle|email|tutorial|case-study",
   "title": "Compelling Title That Promises Value",
   "subtitle": "More specific description of what reader learns",
   "summary": "3-4 sentence executive summary covering: the problem, the solution, what reader will learn, why it matters now",
   "status": "draft",
   "created": "YYYY-MM-DD",
+  "custom_word_count": null,
   "targets": {
-    "total_words": 10000,
-    "minimum_words": 8000,
-    "sections": 10,
-    "external_links": 30,
-    "real_world_examples": 10
+    "total_words": "from preset (or custom)",
+    "minimum_words": "from preset (or custom * 0.8)",
+    "sections": "from preset sections_min-sections_max range",
+    "external_links": "from preset (scaled if custom words)",
+    "real_world_examples": "from preset (scaled if custom words)"
   },
   "editorial_standards": {
-    "prose_ratio_minimum": 0.7,
-    "max_consecutive_bullets": 5,
+    "prose_ratio_minimum": "from preset editorial.prose_ratio_minimum",
+    "max_consecutive_bullets": "from preset editorial.max_consecutive_bullets",
     "header_style": "conversational, no colons"
   },
   "narrative_arc": {
@@ -160,21 +203,28 @@ mkdir -p articles/[slug]/{research,output,drafts}
   },
   "sections": [],
   "quality_gates": {
-    "min_words_per_section": 800,
-    "min_links_per_section": 3,
-    "min_examples_total": 10,
+    "min_words_per_section": "from preset quality_gates",
+    "min_links_per_section": "from preset quality_gates",
+    "min_examples_total": "from preset quality_gates",
     "narrative_flow_check": true,
     "prose_ratio_check": true
+  },
+  "research_config": {
+    "sources_per_section": "from preset research.sources_per_section",
+    "search_queries_min": "from preset research.search_queries_min",
+    "include_video_research": "from preset research.include_video_research"
   },
   "sources": [],
   "metadata": {
     "target_audience": "Description of who this is for",
-    "reading_time": "40-50 minutes",
-    "depth": "high",
+    "reading_time": "from preset reading_time_estimate",
+    "depth": "from preset depth",
     "tags": []
   }
 }
 ```
+
+All values labeled "from preset" must be populated from `templates/presets.json` for the chosen `content_type`, scaled if a custom word count was given.
 
 ### Step 7: Initialize progress.txt
 
@@ -182,15 +232,16 @@ mkdir -p articles/[slug]/{research,output,drafts}
 # Article Progress Log
 Topic: [topic]
 Type: [article_type]
-Target: 10,000+ words
+Format: [content_type]
+Target: [total_words]+ words
 Created: [date]
 
 ## Quality Gates
-- [ ] All sections meet word minimums (800+)
-- [ ] 30+ external links
-- [ ] 10+ real-world examples
+- [ ] All sections meet word minimums ([min_words_per_section]+)
+- [ ] [external_links]+ external links
+- [ ] [real_world_examples]+ real-world examples
 - [ ] Narrative flow verified
-- [ ] Prose ratio 70%+ (not bullet-heavy)
+- [ ] Prose ratio [prose_ratio_minimum]%+ (not bullet-heavy)
 - [ ] Headers conversational (no colons)
 
 ## Iterations
@@ -200,7 +251,8 @@ Created: [date]
 
 After creating the PRD, report:
 - Article title and subtitle
-- Article type detected
+- Content type and article type detected
+- Custom word count (if specified) or preset default
 - Number of sections with word targets
 - Total target word count
 - Key examples to feature

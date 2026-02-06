@@ -1,6 +1,6 @@
 ---
 name: eval
-description: Evaluate article quality against defined gates including prose ratio and header style. Returns PASS or FAIL with specific issues.
+description: Evaluate article quality against targets defined in article.json. All thresholds are read from the spec, not hardcoded. Returns PASS or FAIL with specific issues.
 allowed-tools: Read, Glob, Bash
 ---
 
@@ -10,15 +10,29 @@ Evaluate the article and return a quality verdict.
 
 ## Load Article State
 
-1. Read `article.json` for targets and gates
+1. Read `article.json` for targets, gates, and editorial standards
 2. Read `output/article.md` for actual content
 3. Read `progress.txt` for iteration history
+
+**All thresholds come from article.json.** Do NOT use hardcoded values. The article's `content_type` and any custom word count have already been baked into the targets during PRD generation.
+
+Extract these values from article.json:
+- `targets.total_words` — the ideal word count
+- `targets.minimum_words` — the minimum acceptable word count
+- `targets.external_links` — required link count
+- `targets.real_world_examples` — required example count
+- `quality_gates.min_words_per_section` — minimum words per section
+- `quality_gates.min_links_per_section` — minimum links per section
+- `quality_gates.min_examples_total` — minimum examples total
+- `editorial_standards.prose_ratio_minimum` — minimum prose ratio (as decimal, e.g., 0.7 = 70%)
 
 ## Quality Gates
 
 ### Gate 1: Word Count
 
-**Target**: 8,000+ words minimum, 10,000+ ideal
+Read targets from article.json:
+- **Minimum**: `targets.minimum_words`
+- **Target**: `targets.total_words`
 
 ```bash
 # Count words in article.md
@@ -27,42 +41,42 @@ wc -w output/article.md
 
 | Result | Verdict |
 |--------|---------|
-| < 6,000 | FAIL - Far below minimum |
-| 6,000-7,999 | WARN - Below target |
-| 8,000-9,999 | PASS - Meets minimum |
-| 10,000+ | PASS - Meets target |
+| < minimum_words * 0.75 | FAIL - Far below minimum |
+| minimum_words * 0.75 to minimum_words - 1 | WARN - Below target |
+| minimum_words to total_words - 1 | PASS - Meets minimum |
+| >= total_words | PASS - Meets target |
 
 ### Gate 2: Section Completeness
 
-All sections in `article.json` must have `status: "written"` with `word_count >= 800`.
+All sections in `article.json` must have `status: "written"` with `word_count >= quality_gates.min_words_per_section`.
 
 **Check each section:**
 - [ ] Has content in article.md
-- [ ] Meets word minimum (800)
+- [ ] Meets `quality_gates.min_words_per_section`
 - [ ] Has opening hook
 - [ ] Has closing transition
 
 | Result | Verdict |
 |--------|---------|
 | Any section missing | FAIL |
-| Any section < 800 words | FAIL |
+| Any section < min_words_per_section | FAIL |
 | All sections complete | PASS |
 
 ### Gate 3: External Links
 
-**Target**: 30+ external links
+**Target**: `targets.external_links`
 
 Count unique external URLs in article.md (not internal anchors).
 
 | Result | Verdict |
 |--------|---------|
-| < 20 | FAIL - Needs more sources |
-| 20-29 | WARN - Below target |
-| 30+ | PASS |
+| < target * 0.66 | FAIL - Needs more sources |
+| target * 0.66 to target - 1 | WARN - Below target |
+| >= target | PASS |
 
 ### Gate 4: Real-World Examples
 
-**Target**: 10+ real-world examples
+**Target**: `targets.real_world_examples`
 
 Look for concrete, named examples with:
 - Named person, company, project, study, or organization
@@ -73,13 +87,13 @@ These can be case studies, company examples, named projects, research findings, 
 
 | Result | Verdict |
 |--------|---------|
-| < 5 | FAIL - Needs more examples |
-| 5-9 | WARN - Below target |
-| 10+ | PASS |
+| < target * 0.5 | FAIL - Needs more examples |
+| target * 0.5 to target - 1 | WARN - Below target |
+| >= target | PASS |
 
 ### Gate 5: Prose Ratio
 
-**Target**: 70%+ flowing prose, 30% or less structured elements (lists, tables, code)
+**Target**: `editorial_standards.prose_ratio_minimum` (e.g., 0.7 = 70%)
 
 Count:
 - Lines that are bullet points (`- ` or `* `)
@@ -91,9 +105,9 @@ Compare to total content lines.
 
 | Result | Verdict |
 |--------|---------|
-| < 60% prose | FAIL - Too listicle-heavy |
-| 60-69% prose | WARN - Below target |
-| 70%+ prose | PASS |
+| < target - 0.1 | FAIL - Too listicle-heavy |
+| target - 0.1 to target - 0.01 | WARN - Below target |
+| >= target | PASS |
 
 **Common issues to flag:**
 - Sections that are mostly bullet points
@@ -127,7 +141,7 @@ Scan all `##` and `###` headers for:
 
 Review the article for:
 
-**Opening (first 200 words):**
+**Opening (first ~200 words or first section):**
 - [ ] Has a hook that creates curiosity
 - [ ] Establishes why reader should care
 - [ ] Promises specific value
@@ -135,7 +149,7 @@ Review the article for:
 **Flow:**
 - [ ] Sections connect logically
 - [ ] Transitions feel natural
-- [ ] Building complexity (simple → advanced)
+- [ ] Building complexity (simple -> advanced)
 
 **Closing:**
 - [ ] Summarizes key insights
@@ -156,35 +170,38 @@ Create `eval-result.json`:
 ```json
 {
   "evaluated_at": "timestamp",
+  "content_type": "from article.json",
   "overall_verdict": "PASS|FAIL|WARN",
   "gates": {
     "word_count": {
-      "target": 10000,
-      "actual": N,
+      "target": "from article.json targets.total_words",
+      "minimum": "from article.json targets.minimum_words",
+      "actual": "N",
       "verdict": "PASS|FAIL|WARN"
     },
     "sections_complete": {
       "target": "all",
+      "min_words_per_section": "from article.json quality_gates",
       "actual": "N of M",
       "verdict": "PASS|FAIL"
     },
     "external_links": {
-      "target": 30,
-      "actual": N,
+      "target": "from article.json targets.external_links",
+      "actual": "N",
       "verdict": "PASS|FAIL|WARN"
     },
     "real_world_examples": {
-      "target": 10,
-      "actual": N,
+      "target": "from article.json targets.real_world_examples",
+      "actual": "N",
       "verdict": "PASS|FAIL|WARN"
     },
     "prose_ratio": {
-      "target": "70%",
+      "target": "from article.json editorial_standards.prose_ratio_minimum",
       "actual": "N%",
       "verdict": "PASS|FAIL|WARN"
     },
     "header_style": {
-      "colon_headers_found": N,
+      "colon_headers_found": "N",
       "verdict": "PASS|FAIL"
     },
     "narrative_quality": {
@@ -226,13 +243,14 @@ ELSE:
 ```
 [timestamp] EVALUATION
 ======================
+Content Type: [content_type]
 Overall: [PASS/FAIL/WARN]
 
-Word Count: N/10000 [verdict]
-Sections: N/M complete [verdict]
-Links: N/30 [verdict]
-Examples: N/10 [verdict]
-Prose Ratio: N% [verdict]
+Word Count: N/[total_words target] [verdict]
+Sections: N/M complete [verdict] (min [min_words_per_section] words each)
+Links: N/[external_links target] [verdict]
+Examples: N/[real_world_examples target] [verdict]
+Prose Ratio: N% / [prose_ratio_minimum]% target [verdict]
 Headers: [verdict]
 Narrative: [verdict]
 

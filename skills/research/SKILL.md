@@ -1,19 +1,12 @@
 ---
 name: research
-description: Deep research for an article section. Gathers 10+ sources, finds real-world examples, collects supporting evidence, and identifies case studies. Produces comprehensive research notes.
+description: Deep research for an article section. Scales research depth based on article.json targets. Gathers sources, finds real-world examples, collects supporting evidence, and identifies case studies.
 allowed-tools: Read, Write, WebSearch, WebFetch, Glob
 ---
 
-# Deep Section Research Agent
+# Section Research Agent
 
 Research the section: **$ARGUMENTS**
-
-## Research Standards
-- **10+ quality sources** per section
-- **3+ real-world examples** with links
-- **Supporting evidence** appropriate to the article type
-- **Expert quotes** where available
-- **Contrasting viewpoints** if they exist
 
 ## Setup
 
@@ -22,17 +15,34 @@ Research the section: **$ARGUMENTS**
    - Note the section's `scaffold`, `required_elements`, and `research_questions`
    - Understand the `narrative_role` (hook, foundation, deep-dive, etc.)
    - Check `article_type` to know what kinds of evidence to prioritize
+   - Check `content_type` to understand the format
+   - **Read `research_config`** for this article's research depth settings:
+     - `sources_per_section` — how many sources to gather
+     - `search_queries_min` — minimum number of search queries
+     - `include_video_research` — whether to search for videos
 
 2. **Review What's Needed**
-   - Word target for this section
-   - Required examples and links
+   - Word target for this section (from section's `word_target`)
+   - Required examples and links (from section's `required_elements`)
    - Specific research questions to answer
+   - Research depth from `research_config`
+
+## Research Standards
+
+All targets come from `article.json` — do NOT use hardcoded values:
+
+- **Sources per section**: from `research_config.sources_per_section`
+- **Examples per section**: from section's `required_elements.examples_minimum`
+- **Search queries**: at least `research_config.search_queries_min`
+- **Supporting evidence** appropriate to the article type
+- **Expert quotes** where available
+- **Contrasting viewpoints** if they exist
 
 ## Research Process
 
-### Phase 1: Broad Search (5+ queries)
+### Phase 1: Broad Search
 
-Search for current, authoritative information:
+Run at least `research_config.search_queries_min` search queries. Scale up for deeper articles.
 
 ```
 Query patterns:
@@ -46,9 +56,11 @@ Query patterns:
 - "[topic] expert opinion" - Authority voices
 ```
 
+For shorter formats (email, news), focus on the most relevant 2-3 query patterns. For long-form and research articles, use all patterns and add topic-specific queries.
+
 ### Phase 2: Find Real-World Examples
 
-This is critical. Search specifically for:
+Search specifically for examples matching the section's `required_elements.examples_minimum`:
 - **Named companies** that succeeded or failed with this approach
 - **Named people** (founders, practitioners, experts) with relevant stories
 - **Research studies** with concrete findings and data
@@ -64,7 +76,13 @@ For each example found, note:
 
 ### Phase 3: Deep Dive (WebFetch)
 
-For the 5 most promising sources:
+For the most promising sources (scale to article depth):
+- **Long-form/Research**: Fetch 5+ top sources
+- **Tutorial/Case-study**: Fetch 3-4 top sources
+- **News/Opinion**: Fetch 2-3 top sources
+- **Email**: Fetch 1-2 top sources
+
+For each:
 - Fetch full content
 - Extract key insights, not just summaries
 - Pull exact quotes with attribution
@@ -84,7 +102,9 @@ Based on `article_type` in article.json, prioritize gathering:
 | Tutorial | Step-by-step processes, tool comparisons, common pitfalls |
 | Cultural | Quotes, surveys, trend data, cultural artifacts |
 
-### Phase 5: YouTube/Video Content
+### Phase 5: Video/Media Content
+
+**Only run this phase if `research_config.include_video_research` is true.**
 
 Search for relevant videos:
 - Conference talks (often have unique insights)
@@ -119,7 +139,7 @@ Structure your notes for easy writing:
 - **Why it's notable**: [what makes this a good example]
 
 ### [Example Name 2]
-... continue for 3+ examples ...
+... continue for required number of examples ...
 
 ## Supporting Evidence
 
@@ -194,28 +214,28 @@ Append comprehensive source data:
 ### 4. Append to progress.txt
 ```
 [timestamp] Research: [section-id]
-- Sources: N (target: 10+)
-- Examples found: N (target: 3+)
+- Sources: N (target: [sources_per_section from research_config])
+- Examples found: N (target: [examples_minimum from section])
 - Key insight: [one sentence]
 - Research quality: [PASS/NEEDS MORE]
 ```
 
 ## Quality Check
 
-Before marking complete, verify:
-- [ ] 10+ quality sources gathered
-- [ ] 3+ real-world examples with URLs
+Before marking complete, verify against `article.json` targets:
+- [ ] Sources gathered meets `research_config.sources_per_section`
+- [ ] Examples found meets section's `required_elements.examples_minimum`
 - [ ] Evidence appropriate to article type collected
 - [ ] Research questions answered with citations
-- [ ] Enough material to write 800+ words
+- [ ] Enough material to write the section's `word_target`
 
 If any check fails, do more research before completing.
 
 ## Completion
 
 Summarize:
-- Sources gathered (should be 10+)
-- Examples found (should be 3+)
+- Sources gathered (vs target from article.json)
+- Examples found (vs target from article.json)
 - Evidence collected
 - Research quality assessment
 - Next step: `/research [next-section]` or `/outline` when all done
