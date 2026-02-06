@@ -1,0 +1,35 @@
+{
+  "topic": "",
+  "slug": "",
+  "article_type": "",
+  "title": "",
+  "summary": "",
+  "status": "draft",
+  "created": "",
+  "targets": {
+    "total_words": 10000,
+    "minimum_words": 8000,
+    "sections": 10,
+    "external_links": 30,
+    "real_world_examples": 10
+  },
+  "sections": [
+    {
+      "id": "intro",
+      "title": "Introduction",
+      "priority": 1,
+      "status": "pending",
+      "research_complete": false,
+      "research_questions": [],
+      "word_count": 0
+    }
+  ],
+  "sources": [],
+  "youtube_embeds": [],
+  "metadata": {
+    "target_audience": "",
+    "estimated_words": 10000,
+    "depth": "high",
+    "tags": []
+  }
+}

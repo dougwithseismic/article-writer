@@ -1,0 +1,14 @@
+{
+  "name": "article-writer",
+  "owner": {
+    "name": "wralph"
+  },
+  "plugins": [
+    {
+      "name": "article-writer",
+      "source": "./",
+      "description": "Autonomous agent for writing comprehensive 10k+ word articles with deep research, real-world examples, and quality-gated completion",
+      "version": "1.0.0"
+    }
+  ]
+}
