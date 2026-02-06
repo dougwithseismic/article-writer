@@ -7,7 +7,7 @@
   "content_type": "email",
   "article_type": "technical",
   "custom_word_count": null,
-  "status": "draft",
+  "status": "complete",
   "created": "2026-02-06",
   "targets": {
     "total_words": 1000,
@@ -26,8 +26,9 @@
       "id": "opener",
       "title": "What Shipped This Week",
       "priority": 1,
-      "status": "pending",
-      "research_complete": false,
+      "status": "written",
+      "research_complete": true,
+      "word_count": 185,
       "word_target": 250,
       "word_minimum": 150,
       "narrative_role": "hook",
@@ -47,8 +48,9 @@
       "id": "picks",
       "title": "The Tools Worth Installing",
       "priority": 2,
-      "status": "pending",
-      "research_complete": false,
+      "status": "written",
+      "research_complete": true,
+      "word_count": 700,
       "word_target": 550,
       "word_minimum": 250,
       "narrative_role": "value",
@@ -68,8 +70,9 @@
       "id": "closing",
       "title": "One Thing to Try This Week",
       "priority": 3,
-      "status": "pending",
-      "research_complete": false,
+      "status": "written",
+      "research_complete": true,
+      "word_count": 259,
       "word_target": 200,
       "word_minimum": 100,
       "narrative_role": "cta",
@@ -104,7 +107,63 @@
     "search_queries_min": 2,
     "include_video_research": false
   },
-  "sources": [],
+  "sources": [
+    {
+      "id": "qodo-2-launch",
+      "title": "Introducing Qodo 2.0 and the next generation of AI code review",
+      "url": "https://www.qodo.ai/blog/introducing-qodo-2-0-agentic-code-review/"
+    },
+    {
+      "id": "qodo-2-press",
+      "title": "Qodo 2.0 Redefines AI Code Review For Accuracy and Enterprise Trust",
+      "url": "https://www.globenewswire.com/news-release/2026/02/04/3232129/0/en/Qodo-2-0-Redefines-AI-Code-Review-For-Accuracy-and-Enterprise-Trust.html"
+    },
+    {
+      "id": "ollama-launch-blog",
+      "title": "ollama launch - Ollama Blog",
+      "url": "https://ollama.com/blog/launch"
+    },
+    {
+      "id": "ollama-releases",
+      "title": "Ollama Releases - GitHub",
+      "url": "https://github.com/ollama/ollama/releases"
+    },
+    {
+      "id": "goose-github",
+      "title": "Goose - an open source, extensible AI agent by Block",
+      "url": "https://github.com/block/goose"
+    },
+    {
+      "id": "goose-venturebeat",
+      "title": "Jack Dorsey is back with Goose - VentureBeat",
+      "url": "https://venturebeat.com/programming-development/jack-dorsey-is-back-with-goose-a-new-ultra-simple-open-source-ai-agent-building-platform-from-his-startup-block"
+    },
+    {
+      "id": "coderabbit-main",
+      "title": "CodeRabbit - AI Code Reviews",
+      "url": "https://www.coderabbit.ai/"
+    },
+    {
+      "id": "mabl-main",
+      "title": "mabl - AI-Powered Testing",
+      "url": "https://www.mabl.com/"
+    },
+    {
+      "id": "dev-productivity-stats",
+      "title": "Top 100 Developer Productivity Statistics with AI Tools 2026",
+      "url": "https://www.index.dev/blog/developer-productivity-statistics-with-ai-tools"
+    },
+    {
+      "id": "ollama-claude-docs",
+      "title": "Claude Code - Ollama Integration Docs",
+      "url": "https://docs.ollama.com/integrations/claude-code"
+    },
+    {
+      "id": "cortex-ai-tools",
+      "title": "AI Tools for Developers 2026: More Than Just Coding Assistants",
+      "url": "https://www.cortex.io/post/the-engineering-leaders-guide-to-ai-tools-for-developers-in-2026"
+    }
+  ],
   "metadata": {
     "target_audience": "software developers and engineering leads interested in AI tooling",
     "reading_time": "3-5 minutes",
