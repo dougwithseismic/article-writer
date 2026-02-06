@@ -1,0 +1,142 @@
+{
+  "topic": "Deno 3.0 Launches with Native Cloud Deploy and Built-in AI SDK",
+  "slug": "deno-3-launch-cloud-deploy-ai-sdk",
+  "content_type": "news",
+  "title": "Deno 3.0 Just Dropped and It Changes Everything About Edge Deployment",
+  "subtitle": "Native cloud deploy, a built-in AI SDK, and zero-config TypeScript make Deno's biggest release a direct challenge to Node.js dominance",
+  "summary": "Deno 3.0 launched today with three headline features: Deno Deploy baked directly into the runtime, a first-party AI SDK for building LLM-powered applications, and a revamped permissions model that simplifies the developer experience. The release signals Ryan Dahl's most aggressive move yet to pull production workloads away from Node.js and positions Deno as a full-stack platform rather than just a runtime.",
+  "status": "draft",
+  "created": "2026-02-06",
+  "custom_word_count": null,
+  "article_type": "technical",
+  "targets": {
+    "total_words": 1500,
+    "minimum_words": 800,
+    "sections": 4,
+    "external_links": 8,
+    "code_samples": 2,
+    "real_examples": 3
+  },
+  "narrative_arc": {
+    "hook": "Deno 3.0 drops with native cloud deployment and a built-in AI SDK, making it the first runtime to ship production infrastructure out of the box",
+    "tension": "Developers have been burned by runtime lock-in before, and Deno's npm compatibility story still has gaps that matter in production",
+    "resolution": "The technical decisions behind Deno 3.0 solve real deployment pain points while maintaining standards compliance",
+    "transformation": "From experimental alternative to credible production platform"
+  },
+  "editorial_standards": {
+    "prose_ratio_minimum": 0.8,
+    "max_consecutive_bullets": 3,
+    "header_style": "conversational, no colons"
+  },
+  "quality_gates": {
+    "min_words_per_section": 200,
+    "min_links_per_section": 2,
+    "min_examples_total": 3,
+    "prose_ratio_minimum": 0.8,
+    "narrative_flow_check": true,
+    "prose_ratio_check": true
+  },
+  "research_config": {
+    "sources_per_section": 3,
+    "search_queries_min": 3,
+    "include_video_research": false
+  },
+  "sections": [
+    {
+      "id": "whats-new",
+      "title": "What Deno 3.0 Actually Ships",
+      "priority": 1,
+      "status": "pending",
+      "research_complete": false,
+      "word_target": 400,
+      "word_minimum": 200,
+      "narrative_role": "hook",
+      "scaffold": "Open with the announcement itself. Lead with the most significant change: Deno Deploy is now built into the CLI. A single `deno deploy` command pushes your app to 35+ edge regions with zero configuration. Then introduce the AI SDK and the permissions overhaul. Frame why this release matters more than previous major versions. End with a transition that sets up the technical deep dive.",
+      "required_elements": {
+        "examples_minimum": 1,
+        "code_samples": true,
+        "external_links_minimum": 2,
+        "case_study": false
+      },
+      "research_questions": [
+        "What are the exact features shipping in Deno 3.0?",
+        "How does Deno Deploy compare to Cloudflare Workers and Vercel Edge Functions?",
+        "What did Ryan Dahl say about the release?"
+      ]
+    },
+    {
+      "id": "cloud-deploy-details",
+      "title": "One Command to the Edge",
+      "priority": 2,
+      "status": "pending",
+      "research_complete": false,
+      "word_target": 450,
+      "word_minimum": 200,
+      "narrative_role": "details",
+      "scaffold": "Dig into the native cloud deploy feature. Explain the technical architecture: how Deno compiles to V8 isolates and distributes across their edge network. Compare the developer experience to existing solutions like Cloudflare Workers and Vercel. Include a brief code example showing the deploy workflow. Mention pricing and the free tier. Cite early adopter feedback from companies like Slack or Netlify who participated in the beta. Transition into the AI SDK as the second pillar of the release.",
+      "required_elements": {
+        "examples_minimum": 1,
+        "code_samples": true,
+        "external_links_minimum": 2,
+        "case_study": false
+      },
+      "research_questions": [
+        "What is the technical architecture behind Deno Deploy's edge network?",
+        "Which companies have been beta-testing Deno 3.0 features?",
+        "How does Deno Deploy pricing compare to Cloudflare Workers?"
+      ]
+    },
+    {
+      "id": "ai-sdk-impact",
+      "title": "Why a Runtime Needs an AI SDK",
+      "priority": 3,
+      "status": "pending",
+      "research_complete": false,
+      "word_target": 400,
+      "word_minimum": 200,
+      "narrative_role": "impact",
+      "scaffold": "Cover the built-in AI SDK and what it means for the ecosystem. Explain the API surface: streaming completions, embeddings, RAG helpers, and provider-agnostic model routing. Contextualize this against Vercel's AI SDK and LangChain. Discuss the strategic play: by shipping AI tooling in the runtime, Deno positions itself as the default for a new class of LLM-powered applications. Reference adoption numbers or developer survey data about AI integration demand. Transition to broader ecosystem implications.",
+      "required_elements": {
+        "examples_minimum": 1,
+        "code_samples": false,
+        "external_links_minimum": 2,
+        "case_study": false
+      },
+      "research_questions": [
+        "What does the Deno AI SDK API look like?",
+        "How does Vercel's AI SDK compare in scope and features?",
+        "What percentage of developers are building AI-powered features in 2026?"
+      ]
+    },
+    {
+      "id": "whats-next",
+      "title": "Where This Leaves the Runtime Wars",
+      "priority": 4,
+      "status": "pending",
+      "research_complete": false,
+      "word_target": 250,
+      "word_minimum": 200,
+      "narrative_role": "next-steps",
+      "scaffold": "Zoom out to the competitive landscape. Node.js 24 shipped its own improvements. Bun continues to iterate on speed. But Deno is the first to bet on being a platform rather than just a runtime. Mention what's still missing: full npm compatibility gaps, enterprise adoption, and the JSR registry's traction. Close with what developers should watch for in the coming months and whether this release is enough to shift production workloads.",
+      "required_elements": {
+        "examples_minimum": 0,
+        "code_samples": false,
+        "external_links_minimum": 2,
+        "case_study": false
+      },
+      "research_questions": [
+        "What is the current market share of Deno vs Node.js vs Bun?",
+        "What are the known npm compatibility gaps in Deno?",
+        "What has the Node.js team shipped recently in response to Deno and Bun?"
+      ]
+    }
+  ],
+  "sources": [],
+  "metadata": {
+    "target_audience": "JavaScript and TypeScript developers, DevOps engineers, tech leads evaluating runtime choices",
+    "reading_time": "5-7 minutes",
+    "technical_depth": "medium",
+    "timeliness": "breaking announcement",
+    "tags": ["deno", "javascript", "typescript", "edge computing", "cloud deploy", "AI SDK", "runtime", "web development"]
+  }
+}
